@@ -22,7 +22,10 @@ connecttoRabbitMQ().then(() => {
 })
 app.use(express.json());
 
-app.use("order", orderRouter)
+app.use("/order", orderRouter)
+app.use("*", (req, res) => {
+    res.json({message:"page not found"})
+})
 app.listen(PORT, () => {
   console.log(`Order service is running on port ${PORT}`);
 });

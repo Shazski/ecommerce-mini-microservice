@@ -29,3 +29,9 @@ export const buyProducts = async (req: CustomRequest, res: Response) => {
 });
 res.json(order);
 };
+
+export const getAllProductDetails = async (productDetails:{product_id:string, _id:string}[]) => {
+    const productIds = productDetails.map(detail => detail.product_id);
+    const orders = await Product.find({ _id: { $in: productIds } });
+    return orders
+}

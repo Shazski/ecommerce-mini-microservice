@@ -5,10 +5,21 @@ config();
 const PORT = process.env.PORT || 8080;
 import { connectToMongoDB } from "./config/db";
 import productRouter from "./routers/product.router";
-import {connecttoRabbitMQ} from "./rabbitmq/connect"
+import { connecttoRabbitMQ, getRabbitMqChannel } from "./rabbitmq/connect";
+import { getAllProductDetails } from "./controllers/product.controller";
 //mongodb connection
 connectToMongoDB();
-connecttoRabbitMQ()
+connecttoRabbitMQ().then(() => {
+    const channel = getRabbitMqChannel()
+    channel.consume("ALLPRODUCTS", async (data:any) => {
+        if(data !== null) {
+            const orderDetails = JSON.parse(data.content.toString())
+            const productDetails = await getAllProductDetails(orderDetails.products)
+            channel.ack(data)
+            channel.sendToQueue("ALLDETAILS", Buffer.from(JSON.stringify(productDetails)))
+        }
+    })
+})
 //middleware
 app.use(express.json());
 
